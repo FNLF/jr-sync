@@ -1,0 +1,44 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '1.2.0'
+}
+
+version = '1.0-SNAPSHOT'
+
+mainClassName = "no.bfsk.jrsync.JRSync"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.httpcomponents:httpcore:4.4'
+    compile 'org.apache.httpcomponents:httpclient:4.3.6'
+    compile 'org.apache.httpcomponents:httpmime:4.3.6'
+    runtime 'net.sourceforge.jtds:jtds:1.3.1'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
+
+// fix startup scripts for normal app build
+startScripts {
+    doLast { 
+        def propertiesDir = "conf"
+        def propertiesFile = "jrsync.properties" 
+        unixScript.text = unixScript.text.replace("$mainClassName", "$mainClassName ${'$APP_HOME/'}$propertiesDir/$propertiesFile")
+        windowsScript.text = windowsScript.text.replace("$mainClassName", "$mainClassName %APP_HOME%\\$propertiesDir\\$propertiesFile")
+    }
+}
+
+// fix startup scripts for shadow app build (single jar)
+startShadowScripts {
+    doLast {
+        def propertiesDir = "conf"
+        def propertiesFile = "jrsync.properties"
+        unixScript.text = unixScript.text.replace("$shadowJar.archiveName", "$shadowJar.archiveName ${'$APP_HOME/'}$propertiesDir/$propertiesFile")
+        windowsScript.text = windowsScript.text.replace("$shadowJar.archiveName", "$shadowJar.archiveName %APP_HOME%\\$propertiesDir\\$propertiesFile")
+    }
+}
